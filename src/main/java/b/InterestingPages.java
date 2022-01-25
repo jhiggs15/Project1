@@ -56,20 +56,25 @@ public class InterestingPages {
 
         private IntWritable page = new IntWritable();
         private IntWritable result = new IntWritable();
-        private PriorityQueue<Pair<Integer, Integer>> topEight;
+        private static PriorityQueue<Pair<Integer, Integer>> topEight = new PriorityQueue<Pair<Integer, Integer>>(new Comparator<Pair<Integer, Integer>>() {
+            @Override
+            public int compare(Pair<Integer, Integer> s1, Pair<Integer, Integer> s2) {
+                return s1.getValue().compareTo(s2.getValue());
+            }
+        });
 //        private HashMap<Integer, Integer> pageViews = new HashMap<>();
 
-        @Override
-        public void setup(Context context) throws IOException,
-                InterruptedException
-        {
-            topEight  = new PriorityQueue<Pair<Integer, Integer>>(new Comparator<Pair<Integer, Integer>>() {
-                @Override
-                public int compare(Pair<Integer, Integer> s1, Pair<Integer, Integer> s2) {
-                    return s1.getValue().compareTo(s2.getValue());
-                }
-            });
-        }
+//        @Override
+//        public void setup(Context context) throws IOException,
+//                InterruptedException
+//        {
+//            topEight  = new PriorityQueue<Pair<Integer, Integer>>(new Comparator<Pair<Integer, Integer>>() {
+//                @Override
+//                public int compare(Pair<Integer, Integer> s1, Pair<Integer, Integer> s2) {
+//                    return s1.getValue().compareTo(s2.getValue());
+//                }
+//            });
+//        }
 
         @Override
         public void reduce(IntWritable key, Iterable<IntWritable> values,
@@ -97,6 +102,52 @@ public class InterestingPages {
         }
     }
 
+    public static class PageInfoMapper
+            extends Mapper<Object, Text, IntWritable, Text> {
+
+        private IntWritable id = new IntWritable();
+        private Text pageInfo = new Text();
+
+        public void map(Object key, Text value, Context context
+        ) throws IOException, InterruptedException {
+            if (value.toString().contains(",")) {
+                final String[] columns = value.toString().split(",");
+                id.set(Integer.parseInt(columns[0]));
+                pageInfo.set(columns[1] +" from "+columns[2]);
+                context.write(id, pageInfo);
+            } else {
+                final String[] columns = value.toString().split("\t");
+                id.set(Integer.parseInt(columns[0]));
+                pageInfo.set("Interesting");
+                context.write(id, pageInfo);
+            }
+        }
+    }
+
+    public static class PageInfoReducer
+            extends Reducer<IntWritable,Text,IntWritable,Text> {
+
+        private Text pageInfo = new Text();
+
+        @Override
+        public void reduce(IntWritable key, Iterable<Text> values,
+                           Context context
+        ) throws IOException, InterruptedException {
+            Boolean isInteresting = false;
+            for(Text t : values) {
+                if (t.toString().equals("Interesting")){
+                    isInteresting = true;
+                } else {
+                    pageInfo.set(t);
+                }
+            }
+            if(isInteresting){
+                context.write(key, pageInfo);
+            }
+        }
+
+    }
+
     /**
      * Use run coniditions in intellij to pass the files needed
      * I use output/b.txt as the output
@@ -104,17 +155,28 @@ public class InterestingPages {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "interesting pages");
-        job.setJarByClass(InterestingPages.class);
-        job.setMapperClass(InterestingPages.PageViewMapper.class);
-        job.setCombinerClass(InterestingPages.PageViewCombiner.class);
-        job.setReducerClass(InterestingPages.PageViewReducer.class);
-        job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+//        Configuration conf = new Configuration();
+//        Job job1 = Job.getInstance(conf, "interesting pages");
+//        job1.setJarByClass(InterestingPages.class);
+//        job1.setMapperClass(InterestingPages.PageViewMapper.class);
+//        job1.setCombinerClass(InterestingPages.PageViewCombiner.class);
+//        job1.setReducerClass(InterestingPages.PageViewReducer.class);
+//        job1.setOutputKeyClass(IntWritable.class);
+//        job1.setOutputValueClass(IntWritable.class);
+//        FileInputFormat.addInputPath(job1, new Path(args[0]));
+//        FileOutputFormat.setOutputPath(job1, new Path(args[2]));
+//        job1.waitForCompletion(true);
+
+        Configuration conf2 = new Configuration();
+        Job job2 = Job.getInstance(conf2, "interesting pages information");
+        job2.setJarByClass(InterestingPages.class);
+        job2.setMapperClass(InterestingPages.PageInfoMapper.class);
+        job2.setReducerClass(InterestingPages.PageInfoReducer.class);
+        job2.setOutputKeyClass(IntWritable.class);
+        job2.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPaths(job2, new Path(args[2]) +","+ new Path(args[1]));
+        FileOutputFormat.setOutputPath(job2, new Path(args[3]));
+        System.exit(job2.waitForCompletion(true) ? 0 : 1);
     }
 
 }
