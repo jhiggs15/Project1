@@ -150,22 +150,26 @@ public class InterestingPages {
 
     /**
      * Use run coniditions in intellij to pass the files needed
-     * I use output/b.txt as the output
+     * For example my 4 args are:
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/accessLog.csv
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b_temp.txt
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b.txt
      * @param args
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-//        Configuration conf = new Configuration();
-//        Job job1 = Job.getInstance(conf, "interesting pages");
-//        job1.setJarByClass(InterestingPages.class);
-//        job1.setMapperClass(InterestingPages.PageViewMapper.class);
-//        job1.setCombinerClass(InterestingPages.PageViewCombiner.class);
-//        job1.setReducerClass(InterestingPages.PageViewReducer.class);
-//        job1.setOutputKeyClass(IntWritable.class);
-//        job1.setOutputValueClass(IntWritable.class);
-//        FileInputFormat.addInputPath(job1, new Path(args[0]));
-//        FileOutputFormat.setOutputPath(job1, new Path(args[2]));
-//        job1.waitForCompletion(true);
+        Configuration conf = new Configuration();
+        Job job1 = Job.getInstance(conf, "interesting pages");
+        job1.setJarByClass(InterestingPages.class);
+        job1.setMapperClass(InterestingPages.PageViewMapper.class);
+        job1.setCombinerClass(InterestingPages.PageViewCombiner.class);
+        job1.setReducerClass(InterestingPages.PageViewReducer.class);
+        job1.setOutputKeyClass(IntWritable.class);
+        job1.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job1, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job1, new Path(args[2]));
+        job1.waitForCompletion(true);
 
         Configuration conf2 = new Configuration();
         Job job2 = Job.getInstance(conf2, "interesting pages information");
