@@ -64,7 +64,7 @@ public class UnaccessedFriends {
         }
     }
 
-    public static class IDtoNameMapper extends Mapper<Object, Text, Text, Text>
+//    public static class IDtoNameMapper extends Mapper<Object, Text, Text, Text>
 
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         Configuration conf = new Configuration();
