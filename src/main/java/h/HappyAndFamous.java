@@ -1,4 +1,4 @@
-package d;
+package h;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -13,8 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class HappinessFactor {
-
+public class HappyAndFamous {
 
     public static class FriendMapper
             extends Mapper<Object, Text, IntWritable, IntWritable> {
@@ -30,8 +29,11 @@ public class HappinessFactor {
         }
     }
 
-    public static class FriendCombiner
+    public static class FriendReducer
             extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
+
+        // There are 20 million friends among 200000 people, so the average friendships per person can be calculated
+        private static final double AVERAGE_FRIENDS = 20000000 / 200000;
 
         private IntWritable result = new IntWritable();
 
@@ -43,8 +45,10 @@ public class HappinessFactor {
             for (IntWritable val : values) {
                 sum += val.get();
             }
-            result.set(sum);
-            context.write(key, result);
+            if(sum > AVERAGE_FRIENDS) {
+                result.set(sum);
+                context.write(key, result);
+            }
         }
     }
 
@@ -90,18 +94,20 @@ public class HappinessFactor {
 //                str += vl.next().toString();
                 count++;
             }
-            name.set(str);
-            value.set("has " +friends+" friends");
-            context.write(name, value);
+            if(friends > 0) {
+                name.set(str);
+                value.set("is famous and happy with " + friends + " friends");
+                context.write(name, value);
+            }
         }
     }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "interesting pages");
-        job1.setJarByClass(HappinessFactor.class);
-        job1.setMapperClass(HappinessFactor.FriendMapper.class);
-        job1.setReducerClass(HappinessFactor.FriendCombiner.class);
+        job1.setJarByClass(HappyAndFamous.class);
+        job1.setMapperClass(HappyAndFamous.FriendMapper.class);
+        job1.setReducerClass(HappyAndFamous.FriendReducer.class);
         job1.setOutputKeyClass(IntWritable.class);
         job1.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job1, new Path(args[0]));
@@ -110,9 +116,9 @@ public class HappinessFactor {
 
         Configuration conf2 = new Configuration();
         Job job2 = Job.getInstance(conf2, "interesting pages information");
-        job2.setJarByClass(HappinessFactor.class);
-        job2.setMapperClass(HappinessFactor.NameMapper.class);
-        job2.setReducerClass(HappinessFactor.NameFriendsReducer.class);
+        job2.setJarByClass(HappyAndFamous.class);
+        job2.setMapperClass(HappyAndFamous.NameMapper.class);
+        job2.setReducerClass(NameFriendsReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(Text.class);
         FileInputFormat.addInputPaths(job2, new Path(args[2]) +","+ new Path(args[1]));
