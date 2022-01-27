@@ -13,9 +13,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.PriorityQueue;
-import java.util.StringTokenizer;
+
 
 public class InterestingPages {
 
