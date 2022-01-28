@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+// I could optimize this by storing the myPage info with the id along the way
 
 public class InterestingPages {
 
@@ -61,19 +62,6 @@ public class InterestingPages {
                 return s1.getValue().compareTo(s2.getValue());
             }
         });
-//        private HashMap<Integer, Integer> pageViews = new HashMap<>();
-
-//        @Override
-//        public void setup(Context context) throws IOException,
-//                InterruptedException
-//        {
-//            topEight  = new PriorityQueue<Pair<Integer, Integer>>(new Comparator<Pair<Integer, Integer>>() {
-//                @Override
-//                public int compare(Pair<Integer, Integer> s1, Pair<Integer, Integer> s2) {
-//                    return s1.getValue().compareTo(s2.getValue());
-//                }
-//            });
-//        }
 
         @Override
         public void reduce(IntWritable key, Iterable<IntWritable> values,
@@ -92,7 +80,6 @@ public class InterestingPages {
         protected void cleanup(Context context) throws IOException,
                 InterruptedException {
 //            Pair<Integer, Integer> kv;
-            int count = 8;
             for (Pair<Integer, Integer> kv: topEight){
                 page.set(kv.getKey());
                 result.set(kv.getValue());

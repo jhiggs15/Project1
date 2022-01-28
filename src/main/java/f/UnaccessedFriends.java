@@ -53,7 +53,9 @@ public class UnaccessedFriends {
 //                if(numValue < ACCESS_OFFSET) {
 //                    friends.put(numValue, false);
 //                }
-                friends.put(value.get() % ACCESS_OFFSET, value.get() > ACCESS_OFFSET);
+                if(!friends.containsKey(value.get() % ACCESS_OFFSET) || !friends.get(value.get() % ACCESS_OFFSET)) {
+                    friends.put(value.get() % ACCESS_OFFSET, value.get() > ACCESS_OFFSET);
+                }
             }
             for (int page: friends.keySet()) {
                 if(!friends.get(page)){

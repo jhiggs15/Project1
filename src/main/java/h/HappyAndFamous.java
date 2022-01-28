@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 
+// Use same logic but make it work for any data size
 public class HappyAndFamous {
 
     public static class FriendMapper

@@ -30,7 +30,7 @@ public class HappinessFactor {
         }
     }
 
-    public static class FriendCombiner
+    public static class FriendReducer
             extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
 
         private IntWritable result = new IntWritable();
@@ -78,7 +78,6 @@ public class HappinessFactor {
                 throws IOException, InterruptedException {
             Iterator<Text> vl = values.iterator();
             String str = "";
-            int count = 0;
             int friends = 0;
             while (vl.hasNext()) {
                 String temp = vl.next().toString();
@@ -87,8 +86,6 @@ public class HappinessFactor {
                 } catch (NumberFormatException e) {
                     str = temp;
                 }
-//                str += vl.next().toString();
-                count++;
             }
             name.set(str);
             value.set("has " +friends+" friends");
@@ -101,8 +98,8 @@ public class HappinessFactor {
         Job job1 = Job.getInstance(conf, "friends");
         job1.setJarByClass(HappinessFactor.class);
         job1.setMapperClass(HappinessFactor.FriendMapper.class);
-        job1.setCombinerClass(HappinessFactor.FriendCombiner.class);
-        job1.setReducerClass(HappinessFactor.FriendCombiner.class);
+        job1.setCombinerClass(HappinessFactor.FriendReducer.class);
+        job1.setReducerClass(HappinessFactor.FriendReducer.class);
         job1.setOutputKeyClass(IntWritable.class);
         job1.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job1, new Path(args[0]));
