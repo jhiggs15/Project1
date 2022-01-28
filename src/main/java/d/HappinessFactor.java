@@ -98,9 +98,10 @@ public class HappinessFactor {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job1 = Job.getInstance(conf, "interesting pages");
+        Job job1 = Job.getInstance(conf, "friends");
         job1.setJarByClass(HappinessFactor.class);
         job1.setMapperClass(HappinessFactor.FriendMapper.class);
+        job1.setCombinerClass(HappinessFactor.FriendCombiner.class);
         job1.setReducerClass(HappinessFactor.FriendCombiner.class);
         job1.setOutputKeyClass(IntWritable.class);
         job1.setOutputValueClass(IntWritable.class);
@@ -109,7 +110,7 @@ public class HappinessFactor {
         job1.waitForCompletion(true);
 
         Configuration conf2 = new Configuration();
-        Job job2 = Job.getInstance(conf2, "interesting pages information");
+        Job job2 = Job.getInstance(conf2, "friend and name");
         job2.setJarByClass(HappinessFactor.class);
         job2.setMapperClass(HappinessFactor.NameMapper.class);
         job2.setReducerClass(HappinessFactor.NameFriendsReducer.class);

@@ -29,6 +29,24 @@ public class HappyAndFamous {
         }
     }
 
+    public static class FriendCombiner
+            extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
+
+        private IntWritable result = new IntWritable();
+
+        @Override
+        public void reduce(IntWritable key, Iterable<IntWritable> values,
+                           Context context
+        ) throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+            result.set(sum);
+            context.write(key, result);
+        }
+    }
+
     public static class FriendReducer
             extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
 
@@ -104,9 +122,10 @@ public class HappyAndFamous {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        Job job1 = Job.getInstance(conf, "interesting pages");
+        Job job1 = Job.getInstance(conf, "friends above average ");
         job1.setJarByClass(HappyAndFamous.class);
         job1.setMapperClass(HappyAndFamous.FriendMapper.class);
+        job1.setCombinerClass(HappyAndFamous.FriendCombiner.class);
         job1.setReducerClass(HappyAndFamous.FriendReducer.class);
         job1.setOutputKeyClass(IntWritable.class);
         job1.setOutputValueClass(IntWritable.class);
@@ -115,7 +134,7 @@ public class HappyAndFamous {
         job1.waitForCompletion(true);
 
         Configuration conf2 = new Configuration();
-        Job job2 = Job.getInstance(conf2, "interesting pages information");
+        Job job2 = Job.getInstance(conf2, "pages information");
         job2.setJarByClass(HappyAndFamous.class);
         job2.setMapperClass(HappyAndFamous.NameMapper.class);
         job2.setReducerClass(NameFriendsReducer.class);

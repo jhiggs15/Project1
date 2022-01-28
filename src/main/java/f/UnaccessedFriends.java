@@ -68,7 +68,7 @@ public class UnaccessedFriends {
 
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "word count");
+        Job job = Job.getInstance(conf, "unaccessed friends");
         job.setJarByClass(UnaccessedFriends.class);
         job.setMapperClass(UnaccessedFriends.FriendAccessMapper.class);
 //        job.setCombinerClass(UnaccessedFriends.IntSumReducer.class);
