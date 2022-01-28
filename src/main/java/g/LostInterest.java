@@ -34,7 +34,7 @@ public class LostInterest {
             extends Reducer<IntWritable,IntWritable,IntWritable,Text> {
         private Text result = new Text();
         private final int numberOfDays = 5;
-        private final int lostInteresetAfteX5Days = numberOfDays * 86400; // days * (24h/day * 60min/h * 60sec/min)
+        private final int lostInteresetAfterXDays = numberOfDays * 86400; // days * (24h/day * 60min/h * 60sec/min)
         private final int currentTime = 1000000; // days * (24h/day * 60min/h * 60sec/min)
 
         /**
@@ -57,7 +57,7 @@ public class LostInterest {
                 if(usersAccessTimeValue > maxAccessTime)
                     maxAccessTime = usersAccessTimeValue;
             }
-            if(currentTime - maxAccessTime >= lostInteresetAfteX5Days)
+            if(currentTime - maxAccessTime >= lostInteresetAfterXDays)
                 context.write(key, new Text(findDaysSince(maxAccessTime) + " days since last access." ));
         }
     }

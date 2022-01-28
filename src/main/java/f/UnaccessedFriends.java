@@ -66,6 +66,8 @@ public class UnaccessedFriends {
 
 //    public static class IDtoNameMapper extends Mapper<Object, Text, Text, Text>
 
+    // 0 - accessLog
+    // 1 - friends log
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "unaccessed friends");

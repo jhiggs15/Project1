@@ -14,6 +14,8 @@ import java.io.IOException;
 
 public class BritishUsers {
 
+
+    // selection can be done with just map job
     public static class BritishUsersMapper extends Mapper<Object, Text, Text, Text>{
         private Text nationality = new Text();
         private Text nameAndHobby = new Text();

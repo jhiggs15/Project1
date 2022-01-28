@@ -14,6 +14,8 @@ import java.io.IOException;
 
 public class PagesByCountry {
 
+    // in report say that we used same
+    // add combiner here to reduce load
     public static class PagesByCountryMapper
             extends Mapper<Object, Text, IntWritable, IntWritable> {
 
