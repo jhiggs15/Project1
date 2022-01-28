@@ -33,7 +33,6 @@ public class FavoritesInterpretation2 {
 
     public static class CountUsersReducer
             extends Reducer<Text,IntWritable,Text,IntWritable> {
-        private IntWritable result = new IntWritable();
 
         public void reduce(Text key, Iterable<IntWritable> values,
                            Context context
@@ -56,8 +55,6 @@ public class FavoritesInterpretation2 {
 
     public static class CountNumberOfAccessesReducer
             extends Reducer<Text,IntWritable,Text,IntWritable> {
-        private IntWritable result = new IntWritable();
-
         public void reduce(Text key, Iterable<IntWritable> values,
                            Context context
         ) throws IOException, InterruptedException {
