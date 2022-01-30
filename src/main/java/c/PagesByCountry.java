@@ -26,7 +26,6 @@ public class PagesByCountry {
         ) throws IOException, InterruptedException {
             final String[] columns = value.toString().split(","); // splits row of data into an array
             countryCode.set(Integer.parseInt(columns[3])); // gets country code
-
             context.write(countryCode, one);
         }
     }
@@ -53,6 +52,7 @@ public class PagesByCountry {
         Job job = Job.getInstance(conf, "pages by country");
         job.setJarByClass(PagesByCountry.class);
         job.setMapperClass(PagesByCountry.PagesByCountryMapper.class);
+        job.setCombinerClass(PagesByCountry.PagesByCountryReducer.class);
         job.setReducerClass(PagesByCountry.PagesByCountryReducer.class);
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(IntWritable.class);

@@ -30,7 +30,26 @@ public class LostInterest {
         }
     }
 
-    public static class LostInterestReducer
+    public static class LostInterestReducer1
+            extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
+
+        private IntWritable max = new IntWritable();
+
+        public void reduce(IntWritable key, Iterable<IntWritable> values,
+                           Context context
+        ) throws IOException, InterruptedException {
+            int maxAccessTime = 0;
+            for (IntWritable usersAccessTime : values) {
+                int usersAccessTimeValue = usersAccessTime.get();
+                if(usersAccessTimeValue > maxAccessTime)
+                    maxAccessTime = usersAccessTimeValue;
+            }
+            max.set(maxAccessTime);
+            context.write(key, max);
+        }
+    }
+
+    public static class LostInterestReducer2
             extends Reducer<IntWritable,IntWritable,IntWritable,Text> {
         private Text result = new Text();
         private final int numberOfDays = 5;
@@ -67,7 +86,8 @@ public class LostInterest {
         Job job = Job.getInstance(conf, "word count");
         job.setJarByClass(LostInterest.class);
         job.setMapperClass(LostInterest.LostInterestMapper.class);
-        job.setReducerClass(LostInterest.LostInterestReducer.class);
+        job.setCombinerClass(LostInterest.LostInterestReducer1.class);
+        job.setReducerClass(LostInterest.LostInterestReducer2.class);
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));

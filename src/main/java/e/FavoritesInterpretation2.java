@@ -125,6 +125,7 @@ public class FavoritesInterpretation2 {
         Job job1 = Job.getInstance(conf, "user count");
         job1.setJarByClass(FavoritesInterpretation2.class);
         job1.setMapperClass(FavoritesInterpretation2.CountUsersMapper.class);
+        job1.setCombinerClass(FavoritesInterpretation2.CountUsersReducer.class);
         job1.setReducerClass(FavoritesInterpretation2.CountUsersReducer.class);
         job1.setOutputKeyClass(Text.class);
         job1.setOutputValueClass(IntWritable.class);
@@ -136,6 +137,7 @@ public class FavoritesInterpretation2 {
         Job job2 = Job.getInstance(conf2, "access count");
         job2.setJarByClass(FavoritesInterpretation2.class);
         job2.setMapperClass(FavoritesInterpretation2.CountNumberOfAccessesMapper.class);
+        job1.setCombinerClass(FavoritesInterpretation2.CountNumberOfAccessesReducer.class);
         job2.setReducerClass(FavoritesInterpretation2.CountNumberOfAccessesReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(IntWritable.class);
