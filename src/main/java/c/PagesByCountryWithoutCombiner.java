@@ -12,8 +12,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
 
-public class PagesByCountry {
-
+public class PagesByCountryWithoutCombiner {
     // in report say that we used same
     // add combiner here to reduce load
     public static class PagesByCountryMapper
@@ -52,14 +51,13 @@ public class PagesByCountry {
         long timeNow = System.currentTimeMillis();
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "pages by country");
-        job.setJarByClass(PagesByCountry.class);
-        job.setMapperClass(PagesByCountry.PagesByCountryMapper.class);
-        job.setCombinerClass(PagesByCountry.PagesByCountryReducer.class);
-        job.setReducerClass(PagesByCountry.PagesByCountryReducer.class);
+        job.setJarByClass(PagesByCountryWithoutCombiner.class);
+        job.setMapperClass(PagesByCountryMapper.class);
+        job.setReducerClass(PagesByCountryReducer.class);
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0])); //myPage
-        FileOutputFormat.setOutputPath(job, new Path(args[1])); //c
+        FileOutputFormat.setOutputPath(job, new Path(args[1] + "2")); //c2
         job.waitForCompletion(true);
 
         long timeFinish = System.currentTimeMillis();

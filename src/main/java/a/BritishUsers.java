@@ -34,14 +34,20 @@ public class BritishUsers {
     }
 
     public static void main(String[] args) throws Exception {
+        long timeNow = System.currentTimeMillis();
+
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "Find British Users");
         job.setJarByClass(BritishUsers.class);
         job.setMapperClass(BritishUsersMapper.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        FileInputFormat.addInputPath(job, new Path(args[0])); // myPage.csv
+        FileOutputFormat.setOutputPath(job, new Path(args[1])); // a
+        job.waitForCompletion(true);
+
+        long timeFinish = System.currentTimeMillis();
+        double seconds = (timeFinish - timeNow) / 1000.0;
+        System.out.println("With Combiner " + seconds + " seconds");
     }
 }

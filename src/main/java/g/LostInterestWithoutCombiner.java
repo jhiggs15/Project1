@@ -1,6 +1,5 @@
 package g;
 
-import f.UnaccessedFriends;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -13,7 +12,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
 
-public class LostInterest {
+public class LostInterestWithoutCombiner {
 
     public static class LostInterestMapper
             extends Mapper<Object, Text, IntWritable, IntWritable> {
@@ -30,26 +29,8 @@ public class LostInterest {
         }
     }
 
-    public static class LostInterestReducer1
-            extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
 
-        private IntWritable max = new IntWritable();
-
-        public void reduce(IntWritable key, Iterable<IntWritable> values,
-                           Context context
-        ) throws IOException, InterruptedException {
-            int maxAccessTime = 0;
-            for (IntWritable usersAccessTime : values) {
-                int usersAccessTimeValue = usersAccessTime.get();
-                if(usersAccessTimeValue > maxAccessTime)
-                    maxAccessTime = usersAccessTimeValue;
-            }
-            max.set(maxAccessTime);
-            context.write(key, max);
-        }
-    }
-
-    public static class LostInterestReducer2
+    public static class LostInterestReducer
             extends Reducer<IntWritable,IntWritable,IntWritable,Text> {
         private Text result = new Text();
         private final int numberOfDays = 5;
@@ -86,14 +67,13 @@ public class LostInterest {
 
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "word count");
-        job.setJarByClass(LostInterest.class);
-        job.setMapperClass(LostInterest.LostInterestMapper.class);
-        job.setCombinerClass(LostInterest.LostInterestReducer1.class);
-        job.setReducerClass(LostInterest.LostInterestReducer2.class);
+        job.setJarByClass(LostInterestWithoutCombiner.class);
+        job.setMapperClass(LostInterestWithoutCombiner.LostInterestMapper.class);
+        job.setReducerClass(LostInterestWithoutCombiner.LostInterestReducer.class);
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1] + "2"));
         job.waitForCompletion(true);
 
         long timeFinish = System.currentTimeMillis();

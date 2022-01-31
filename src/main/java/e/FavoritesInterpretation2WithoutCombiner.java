@@ -10,13 +10,13 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 
 // interprets problem as returning all users even if they have no page accesses or no favorites
-public class FavoritesInterpretation2 {
+public class FavoritesInterpretation2WithoutCombiner {
 
     public enum FavoritesCounters {USERCOUNT, ACCESSCOUNT, NUMBEROFACCESESREAD};
 
@@ -124,26 +124,24 @@ public class FavoritesInterpretation2 {
 
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "user count");
-        job1.setJarByClass(FavoritesInterpretation2.class);
-        job1.setMapperClass(FavoritesInterpretation2.CountUsersMapper.class);
-        job1.setCombinerClass(FavoritesInterpretation2.CountUsersReducer.class);
-        job1.setReducerClass(FavoritesInterpretation2.CountUsersReducer.class);
+        job1.setJarByClass(FavoritesInterpretation2WithoutCombiner.class);
+        job1.setMapperClass(FavoritesInterpretation2WithoutCombiner.CountUsersMapper.class);
+        job1.setReducerClass(FavoritesInterpretation2WithoutCombiner.CountUsersReducer.class);
         job1.setOutputKeyClass(Text.class);
         job1.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job1, new Path(args[0])); //myPage
-        FileOutputFormat.setOutputPath(job1, new Path(args[2] + "temp1")); //etemp1
+        FileInputFormat.addInputPath(job1, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job1, new Path(args[2] + "temp3"));
         job1.waitForCompletion(true);
 
         Configuration conf2 = new Configuration();
         Job job2 = Job.getInstance(conf2, "access count");
-        job2.setJarByClass(FavoritesInterpretation2.class);
-        job2.setMapperClass(FavoritesInterpretation2.CountNumberOfAccessesMapper.class);
-        job2.setCombinerClass(FavoritesInterpretation2.CountNumberOfAccessesReducer.class);
-        job2.setReducerClass(FavoritesInterpretation2.CountNumberOfAccessesReducer.class);
+        job2.setJarByClass(FavoritesInterpretation2WithoutCombiner.class);
+        job2.setMapperClass(FavoritesInterpretation2WithoutCombiner.CountNumberOfAccessesMapper.class);
+        job2.setReducerClass(FavoritesInterpretation2WithoutCombiner.CountNumberOfAccessesReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job2, new Path(args[1])); //accessLog
-        FileOutputFormat.setOutputPath(job2, new Path(args[2] + "temp2")); //etemp2
+        FileInputFormat.addInputPath(job2, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job2, new Path(args[2] + "temp4"));
         job2.waitForCompletion(true);
 
         long userCount = job1.getCounters().findCounter(FavoritesCounters.USERCOUNT).getValue();
@@ -153,17 +151,17 @@ public class FavoritesInterpretation2 {
         conf3.setLong(FavoritesCounters.USERCOUNT.name(), userCount);
         conf3.setLong(FavoritesCounters.ACCESSCOUNT.name(), accessCount);
         Job job3 = Job.getInstance(conf3, "favorites");
-        job3.setJarByClass(FavoritesInterpretation2.class);
-        job3.setMapperClass(FavoritesInterpretation2.FavoritesMapper.class);
-        job3.setReducerClass(FavoritesInterpretation2.FavoritesReducer.class);
+        job3.setJarByClass(FavoritesInterpretation2WithoutCombiner.class);
+        job3.setMapperClass(FavoritesInterpretation2WithoutCombiner.FavoritesMapper.class);
+        job3.setReducerClass(FavoritesInterpretation2WithoutCombiner.FavoritesReducer.class);
 
         job3.setMapOutputKeyClass(IntWritable.class);
         job3.setMapOutputValueClass(IntWritable.class);
         job3.setOutputKeyClass(IntWritable.class);
         job3.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job3, new Path(args[1])); // accessLog
-        FileOutputFormat.setOutputPath(job3, new Path(args[2] + "2")); //e2
+        FileInputFormat.addInputPath(job3, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job3, new Path(args[2] + "3"));
         job3.waitForCompletion(true);
 
         long timeFinish = System.currentTimeMillis();

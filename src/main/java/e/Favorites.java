@@ -56,6 +56,7 @@ public class Favorites {
 
 
     public static void main(String[] args) throws Exception {
+        long timeNow = System.currentTimeMillis();
 
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "favorites");
@@ -68,8 +69,12 @@ public class Favorites {
         job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        FileInputFormat.addInputPath(job, new Path(args[0])); //accessLog
+        FileOutputFormat.setOutputPath(job, new Path(args[1])); //e
+        job.waitForCompletion(true);
+
+        long timeFinish = System.currentTimeMillis();
+        double seconds = (timeFinish - timeNow) / 1000.0;
+        System.out.println(seconds + " seconds");
     }
 }
