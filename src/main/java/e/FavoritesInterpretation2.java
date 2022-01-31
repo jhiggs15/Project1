@@ -119,6 +119,7 @@ public class FavoritesInterpretation2 {
 
 
     public static void main(String[] args) throws Exception {
+        long startTime = System.currentTimeMillis();
 
 
         Configuration conf = new Configuration();
@@ -163,7 +164,10 @@ public class FavoritesInterpretation2 {
 
         FileInputFormat.addInputPath(job3, new Path(args[1]));
         FileOutputFormat.setOutputPath(job3, new Path(args[4]));
-        System.exit(job3.waitForCompletion(true) ? 0 : 1);
+        job3.waitForCompletion(true);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Took "+(endTime - startTime) + " ms");
     }
 }
 

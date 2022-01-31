@@ -1,5 +1,6 @@
 package e;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -56,6 +57,7 @@ public class Favorites {
 
 
     public static void main(String[] args) throws Exception {
+        long startTime = System.currentTimeMillis();
 
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "favorites");
@@ -70,6 +72,9 @@ public class Favorites {
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        job.waitForCompletion(true);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Took "+(endTime - startTime) + " ms");
     }
 }

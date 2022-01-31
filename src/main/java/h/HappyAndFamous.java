@@ -153,6 +153,8 @@ public class HappyAndFamous {
     }
 
     public static void main(String[] args) throws Exception {
+        long startTime = System.currentTimeMillis();
+
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "friends above average ");
         job1.setJarByClass(HappyAndFamous.class);
@@ -174,6 +176,9 @@ public class HappyAndFamous {
         job2.setOutputValueClass(Text.class);
         FileInputFormat.addInputPaths(job2, new Path(args[2]) +","+ new Path(args[1]));
         FileOutputFormat.setOutputPath(job2, new Path(args[3]));
-        System.exit(job2.waitForCompletion(true) ? 0 : 1);
+        job2.waitForCompletion(true);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Took "+(endTime - startTime) + " ms");
     }
 }

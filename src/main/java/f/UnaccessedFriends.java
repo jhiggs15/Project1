@@ -71,6 +71,8 @@ public class UnaccessedFriends {
     // 0 - accessLog
     // 1 - friends log
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
+        long startTime = System.currentTimeMillis();
+
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "unaccessed friends");
         job.setJarByClass(UnaccessedFriends.class);
@@ -81,6 +83,9 @@ public class UnaccessedFriends {
         job.setOutputValueClass(IntWritable.class);
         FileInputFormat.addInputPaths(job, new Path(args[0]) +","+ new Path(args[1]));
         FileOutputFormat.setOutputPath(job, new Path(args[2]));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        job.waitForCompletion(true);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Took "+(endTime - startTime) + " ms");
     }
 }
