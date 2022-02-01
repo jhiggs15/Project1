@@ -17,6 +17,7 @@ import java.util.HashMap;
 // Use same logic but make it work for any data size
 public class HappyAndFamous {
 
+
     public static final IntWritable friendsCounter = new IntWritable(-1);
     public static final IntWritable peopleCounter = new IntWritable(-2);
     private final static IntWritable one = new IntWritable(1);
@@ -32,7 +33,7 @@ public class HappyAndFamous {
             final String[] columns = value.toString().split(",");
             personID.set(Integer.parseInt(columns[1]));
             context.write(personID, one);
-            context.write(peopleCounter, one);
+            context.write(friendsCounter, one);
         }
     }
 
@@ -41,7 +42,7 @@ public class HappyAndFamous {
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
-            context.write(friendsCounter, one);
+            context.write(peopleCounter, one);
         }
     }
 
@@ -199,6 +200,6 @@ public class HappyAndFamous {
         job2.waitForCompletion(true);
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Took "+(endTime - startTime) + " ms");
+        System.out.println((endTime - startTime) / 1000.0 + " seconds");
     }
 }
