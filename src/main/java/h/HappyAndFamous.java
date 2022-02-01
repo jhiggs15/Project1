@@ -1,13 +1,18 @@
 package h;
 
+import b.InterestingPages;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
@@ -19,24 +24,29 @@ public class HappyAndFamous {
 
     public static final IntWritable friendsCounter = new IntWritable(-1);
     public static final IntWritable peopleCounter = new IntWritable(-2);
+    private final static IntWritable one = new IntWritable(1);
+
 
     public static class FriendMapper
             extends Mapper<Object, Text, IntWritable, IntWritable> {
 
-        private final static IntWritable one = new IntWritable(1);
-        private IntWritable whatPage = new IntWritable();
+        private IntWritable personID = new IntWritable();
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
             final String[] columns = value.toString().split(",");
-            try{
-                Integer.parseInt(columns[1]);
-                whatPage.set(Integer.parseInt(columns[2]));
-                context.write(whatPage, one);
-                context.write(friendsCounter, one);
-            } catch (NumberFormatException e) {
-                context.write(peopleCounter, one);
-            }
+            personID.set(Integer.parseInt(columns[1]));
+            context.write(personID, one);
+            context.write(peopleCounter, one);
+        }
+    }
+
+    public static class PeopleMapper
+            extends Mapper<Object, Text, IntWritable, IntWritable> {
+
+        public void map(Object key, Text value, Context context
+        ) throws IOException, InterruptedException {
+            context.write(friendsCounter, one);
         }
     }
 
@@ -50,9 +60,8 @@ public class HappyAndFamous {
                            Context context
         ) throws IOException, InterruptedException {
             int sum = 0;
-            for (IntWritable val : values) {
+            for (IntWritable val : values)
                 sum += val.get();
-            }
             result.set(sum);
             context.write(key, result);
         }
@@ -61,13 +70,10 @@ public class HappyAndFamous {
     public static class FriendReducer
             extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
 
-        // There are 20 million friends among 200000 people, so the average friendships per person can be calculated
-        private static double numFriends = 0;
-        private static double numPeople = 0;
-
-        private IntWritable whatPage = new IntWritable();
         private IntWritable result = new IntWritable();
-
+        private IntWritable whatPage = new IntWritable();
+        private double friendsCounterValue;
+        private double peopleCounterValue;
         private HashMap<Integer, Integer> friendsMap = new HashMap<>();
 
         @Override
@@ -75,27 +81,25 @@ public class HappyAndFamous {
                            Context context
         ) throws IOException, InterruptedException {
             int sum = 0;
-            for (IntWritable val : values) {
+            for (IntWritable val : values)
                 sum += val.get();
-            }
-            if(key.get() == friendsCounter.get()){
-                numFriends = sum;
-            } else if (key.get() == peopleCounter.get()){
-                numPeople = sum;
-            } else {
+
+            if(key.equals(friendsCounter))
+                friendsCounterValue = sum;
+            else if(key.equals(peopleCounter))
+                peopleCounterValue = sum;
+            else
                 friendsMap.put(key.get(), sum);
-            }
         }
 
         @Override
         public void cleanup(Context context) throws IOException, InterruptedException {
-            int friends = 0;
-            double average = numFriends / numPeople;
+            double average = friendsCounterValue / peopleCounterValue;
             for (int id: friendsMap.keySet()) {
-                friends = friendsMap.get(id);
-                if (friends > average){
+                Integer numberOfFriends = friendsMap.get(id);
+                if (numberOfFriends > average){
                     whatPage.set(id);
-                    result.set(friends);
+                    result.set(numberOfFriends);
                     context.write(whatPage, result);
                 }
             }
@@ -103,54 +107,59 @@ public class HappyAndFamous {
     }
 
     public static class NameMapper
-            extends Mapper<Object, Text, Text, Text> {
+            extends Mapper<Object, Text, IntWritable, Text> {
 
         private Text value = new Text();
-        private Text id = new Text();
+        private IntWritable id = new IntWritable();
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
-            if (value.toString().contains(",")) {
-                final String[] columns = value.toString().split(",");
-                id.set(columns[0]);
-                value.set(columns[1]);
-            } else {
-                final String[] columns = value.toString().split("\t");
-                id.set(columns[0]);
-                value.set(columns[1]);
-            }
+            final String[] columns = value.toString().split(",");
+            id.set(Integer.parseInt(columns[0])); // id
+            value.set(columns[1]); // name
             context.write(id, value);
         }
     }
 
-    public static class NameFriendsReducer extends Reducer<Text, Text, Text, Text> {
+    public static class AverageMapper
+            extends Mapper<Object, Text, IntWritable, Text> {
 
         private Text value = new Text();
-        private Text name = new Text();
+        private IntWritable id = new IntWritable();
 
-        public void reduce(Text key, Iterable<Text> values, Context context)
+        public void map(Object key, Text value, Context context
+        ) throws IOException, InterruptedException {
+            final String[] columns = value.toString().split("\t");
+            id.set(Integer.parseInt(columns[0])); // id
+            value.set(columns[1]); // average
+            context.write(id, value);
+        }
+    }
+
+    public static class NameFriendsReducer extends Reducer<IntWritable, Text, Text, Text> {
+
+        private Text name = new Text();
+        private Text value = new Text();
+
+        @Override
+        public void reduce(IntWritable key, Iterable<Text> values, Context context)
                 throws IOException, InterruptedException {
-            Iterator<Text> vl = values.iterator();
-            String str = "";
-            int count = 0;
-            int friends = 0;
-            while (vl.hasNext()) {
-                String temp = vl.next().toString();
+
+            int numberOfFriends = 0;
+            for (Text val : values)
                 try {
-                    friends = Integer.parseInt(temp);
-                } catch (NumberFormatException e) {
-                    str = temp;
+                    numberOfFriends += Integer.parseInt(val.toString());
+                } catch (final NumberFormatException e) {
+                    name.set(val);
                 }
-//                str += vl.next().toString();
-                count++;
-            }
-            if(friends > 0) {
-                name.set(str);
-                value.set("is famous and happy with " + friends + " friends");
+
+            if(numberOfFriends != 0) {
+                value.set("is famous and happy with " + numberOfFriends + " friends");
                 context.write(name, value);
             }
         }
     }
+
 
     public static void main(String[] args) throws Exception {
         long startTime = System.currentTimeMillis();
@@ -158,24 +167,31 @@ public class HappyAndFamous {
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "friends above average ");
         job1.setJarByClass(HappyAndFamous.class);
-        job1.setMapperClass(HappyAndFamous.FriendMapper.class);
         job1.setCombinerClass(HappyAndFamous.FriendCombiner.class);
         job1.setReducerClass(HappyAndFamous.FriendReducer.class);
         job1.setOutputKeyClass(IntWritable.class);
         job1.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPaths(job1, new Path(args[0]) +","+ new Path(args[1]));
-        FileOutputFormat.setOutputPath(job1, new Path(args[2]));
+
+        MultipleInputs.addInputPath(job1, new Path(args[0]), TextInputFormat.class, HappyAndFamous.FriendMapper.class);
+        MultipleInputs.addInputPath(job1, new Path(args[1]), TextInputFormat.class, HappyAndFamous.PeopleMapper.class);
+        FileOutputFormat.setOutputPath(job1, new Path(args[2] + "temp"));
         job1.waitForCompletion(true);
+
 
         Configuration conf2 = new Configuration();
         Job job2 = Job.getInstance(conf2, "pages information");
         job2.setJarByClass(HappyAndFamous.class);
-        job2.setMapperClass(HappyAndFamous.NameMapper.class);
-        job2.setReducerClass(NameFriendsReducer.class);
+        job2.setReducerClass(HappyAndFamous.NameFriendsReducer.class);
+
+        job2.setMapOutputKeyClass(IntWritable.class);
+        job2.setMapOutputValueClass(Text.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPaths(job2, new Path(args[2]) +","+ new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path(args[3]));
+
+        MultipleInputs.addInputPath(job2, new Path(args[2] + "temp"), TextInputFormat.class, HappyAndFamous.AverageMapper.class);
+        MultipleInputs.addInputPath(job2, new Path(args[1]), TextInputFormat.class, HappyAndFamous.NameMapper.class);
+        FileOutputFormat.setOutputPath(job2, new Path(args[2]));
+
         job2.waitForCompletion(true);
 
         long endTime = System.currentTimeMillis();
