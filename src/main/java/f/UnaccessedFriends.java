@@ -66,10 +66,15 @@ public class UnaccessedFriends {
         }
     }
 
-//    public static class IDtoNameMapper extends Mapper<Object, Text, Text, Text>
-
-    // 0 - accessLog
-    // 1 - friends log
+    /**
+     * Use run conditions in intellij to pass the files needed
+     * For example my args are:
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/friends.csv
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/accessLog.csv
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/f.txt
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         long startTime = System.currentTimeMillis();
 

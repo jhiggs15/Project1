@@ -45,7 +45,14 @@ public class PagesByCountryWithoutCombiner {
         }
     }
 
-
+    /**
+     * Use run conditions in intellij to pass the files needed
+     * For example my args are:
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/c.txt
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
 
         long timeNow = System.currentTimeMillis();

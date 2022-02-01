@@ -137,8 +137,8 @@ public class InterestingPages {
     }
 
     /**
-     * Use run coniditions in intellij to pass the files needed
-     * For example my 4 args are:
+     * Use run conditions in intellij to pass the files needed
+     * For example my args are:
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/accessLog.csv
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b_temp.txt
