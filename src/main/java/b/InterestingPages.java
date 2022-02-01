@@ -37,18 +37,18 @@ public class InterestingPages {
 
         public static class PopPage implements Comparable<PopPage> {
             public int pageId;
-            public int friends;
+            public int accesses;
             public String name;
 
-            public PopPage(int pageId, int friends, String name){
+            public PopPage(int pageId, int accesses, String name){
                 this.pageId = pageId;
-                this.friends = friends;
+                this.accesses = accesses;
                 this.name = name;
             }
 
             @Override
             public int compareTo(PopPage s2) {
-                return Integer.compare(this.friends, s2.friends);
+                return Integer.compare(this.accesses, s2.accesses);
             }
         }
 
@@ -80,7 +80,7 @@ public class InterestingPages {
 //            Pair<Integer, Integer> kv;
             for (PopPage popPage: topEight){
                 id.set(popPage.pageId);
-                result.set(popPage.name+" has " + popPage.friends+" friends");
+                result.set(popPage.name+" has " + popPage.accesses+" accesses");
                 context.write(id, result);
             }
         }
