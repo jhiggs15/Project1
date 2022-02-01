@@ -141,8 +141,8 @@ public class InterestingPages {
      * For example my args are:
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/accessLog.csv
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
-     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b_temp.txt
-     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b.txt
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b_temp
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b
      * @param args
      * @throws Exception
      */
@@ -173,7 +173,7 @@ public class InterestingPages {
         job2.waitForCompletion(true);
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Took "+(endTime - startTime) + " ms");
+        System.out.println((endTime - startTime) / 1000.0 + " seconds");
     }
 
 }

@@ -37,7 +37,7 @@ public class BritishUsers {
      * Use run conditions in intellij to pass the files needed
      * For example my args are:
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
-     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/a.txt
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/a
      * @param args
      * @throws Exception
      */

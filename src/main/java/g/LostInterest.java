@@ -86,7 +86,7 @@ public class LostInterest {
      * Use run conditions in intellij to pass the files needed
      * For example my args are:
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/accessLog.csv
-     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/g.txt
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/g
      * @param args
      * @throws Exception
      */

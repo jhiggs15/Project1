@@ -102,7 +102,7 @@ public class HappinessFactorOneJob {
      * For example my args are:
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/friends.csv
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
-     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/d.txt
+     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/d
      * @param args
      * @throws Exception
      */
@@ -124,6 +124,7 @@ public class HappinessFactorOneJob {
         job1.waitForCompletion(true);
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Took "+(endTime - startTime) + " ms");
+        System.out.println((endTime - startTime) / 1000.0 + " seconds");
+
     }
 }
