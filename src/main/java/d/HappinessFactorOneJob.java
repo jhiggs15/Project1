@@ -19,9 +19,9 @@ public class HappinessFactorOneJob {
 
 
     public static class FriendMapper
-            extends Mapper<Object, Text, IntWritable, IntWritable> {
+            extends Mapper<Object, Text, IntWritable, Text> {
 
-        private final static IntWritable one = new IntWritable(1);
+        private final static Text one = new Text("1");
         private IntWritable whatPage = new IntWritable();
 
         public void map(Object key, Text value, Context context
