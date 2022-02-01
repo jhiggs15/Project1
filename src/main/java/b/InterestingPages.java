@@ -1,7 +1,5 @@
 package b;
 
-import javafx.util.Pair;
-import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -9,12 +7,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.PriorityQueue;
 
 // I could optimize this by storing the myPage info with the id along the way
@@ -22,9 +19,9 @@ import java.util.PriorityQueue;
 public class InterestingPages {
 
     public static class PageViewMapper
-            extends Mapper<Object, Text, IntWritable, IntWritable> {
+            extends Mapper<Object, Text, IntWritable, Text> {
 
-        private final static IntWritable one = new IntWritable(1);
+        private final static Text one = new Text("1");
         private IntWritable whatPage = new IntWritable();
 
         public void map(Object key, Text value, Context context
@@ -35,57 +32,56 @@ public class InterestingPages {
         }
     }
 
-    public static class PageViewCombiner
-            extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
-
-        private IntWritable result = new IntWritable();
-
-        @Override
-        public void reduce(IntWritable key, Iterable<IntWritable> values,
-                           Context context
-        ) throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
-                sum += val.get();
-            }
-            result.set(sum);
-            context.write(key, result);
-        }
-    }
-
     public static class PageViewReducer
-            extends Reducer<IntWritable,IntWritable,IntWritable,IntWritable> {
+            extends Reducer<IntWritable,Text,IntWritable,Text> {
 
-        private IntWritable page = new IntWritable();
-        private IntWritable result = new IntWritable();
-        private static PriorityQueue<Pair<Integer, Integer>> topEight = new PriorityQueue<Pair<Integer, Integer>>(new Comparator<Pair<Integer, Integer>>() {
-            @Override
-            public int compare(Pair<Integer, Integer> s1, Pair<Integer, Integer> s2) {
-                return s1.getValue().compareTo(s2.getValue());
+        public static class PopPage implements Comparable<PopPage> {
+            public int pageId;
+            public int friends;
+            public String name;
+
+            public PopPage(int pageId, int friends, String name){
+                this.pageId = pageId;
+                this.friends = friends;
+                this.name = name;
             }
-        });
+
+            @Override
+            public int compareTo(PopPage s2) {
+                return Integer.compare(this.friends, s2.friends);
+            }
+        }
+
+        private IntWritable id = new IntWritable();
+        private Text result = new Text();
+        private static PriorityQueue<PopPage> topEight = new PriorityQueue<PopPage>();
 
         @Override
-        public void reduce(IntWritable key, Iterable<IntWritable> values,
+        public void reduce(IntWritable key, Iterable<Text> values,
                            Context context
         ) throws IOException, InterruptedException {
             int sum = 0;
-            for (IntWritable val : values) {
-                sum += val.get();
+            String name = "";
+            for (Text val : values) {
+                try {
+                    sum += Integer.parseInt(val.toString());
+                } catch (NumberFormatException e){
+                    name = val.toString();
+                }
+
             }
-            topEight.add(new Pair<Integer,Integer>(key.get(), sum));
+            topEight.add(new PopPage(key.get(), sum, name));
             if(topEight.size() > 8) topEight.poll();
-            result.set(sum);
         }
 
         @Override
         protected void cleanup(Context context) throws IOException,
                 InterruptedException {
 //            Pair<Integer, Integer> kv;
-            for (Pair<Integer, Integer> kv: topEight){
-                page.set(kv.getKey());
-                result.set(kv.getValue());
-                context.write(page, result);
+            for (PopPage popPage: topEight){
+                id.set(popPage.pageId);
+                result.set(popPage.name+" has " + popPage.friends+" friends");
+                context.write(id, result);
             }
         }
     }
@@ -98,42 +94,11 @@ public class InterestingPages {
 
         public void map(Object key, Text value, Context context
         ) throws IOException, InterruptedException {
-            if (value.toString().contains(",")) {
-                final String[] columns = value.toString().split(",");
-                id.set(Integer.parseInt(columns[0]));
-                pageInfo.set(columns[1] +" from "+columns[2]);
-                context.write(id, pageInfo);
-            } else {
-                final String[] columns = value.toString().split("\t");
-                id.set(Integer.parseInt(columns[0]));
-                pageInfo.set("Interesting");
-                context.write(id, pageInfo);
-            }
+            final String[] columns = value.toString().split(",");
+            id.set(Integer.parseInt(columns[0]));
+            pageInfo.set(columns[1] +" from "+columns[2]);
+            context.write(id, pageInfo);
         }
-    }
-
-    public static class PageInfoReducer
-            extends Reducer<IntWritable,Text,IntWritable,Text> {
-
-        private Text pageInfo = new Text();
-
-        @Override
-        public void reduce(IntWritable key, Iterable<Text> values,
-                           Context context
-        ) throws IOException, InterruptedException {
-            Boolean isInteresting = false;
-            for(Text t : values) {
-                if (t.toString().equals("Interesting")){
-                    isInteresting = true;
-                } else {
-                    pageInfo.set(t);
-                }
-            }
-            if(isInteresting){
-                context.write(key, pageInfo);
-            }
-        }
-
     }
 
     /**
@@ -141,7 +106,6 @@ public class InterestingPages {
      * For example my 4 args are:
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/accessLog.csv
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Are-you-My-Friend-Analytics/DataOutput/myPage.csv
-     * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b_temp.txt
      * file:///C:/Users/Gus/Documents/Code/CS-4433/Project1/output/b.txt
      * @param args
      * @throws Exception
@@ -152,25 +116,16 @@ public class InterestingPages {
         Configuration conf = new Configuration();
         Job job1 = Job.getInstance(conf, "interesting pages");
         job1.setJarByClass(InterestingPages.class);
-        job1.setMapperClass(InterestingPages.PageViewMapper.class);
-        job1.setCombinerClass(InterestingPages.PageViewCombiner.class);
+        job1.setNumReduceTasks(1); //This must be one for this reducer to find the true maximum
         job1.setReducerClass(InterestingPages.PageViewReducer.class);
-        job1.setOutputKeyClass(IntWritable.class);
-        job1.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job1, new Path(args[0]));
+        job1.setMapOutputKeyClass(IntWritable.class);
+        job1.setMapOutputValueClass(Text.class);
+        job1.setOutputKeyClass(Text.class);
+        job1.setOutputValueClass(Text.class);
+        MultipleInputs.addInputPath(job1, new Path(args[0]), TextInputFormat.class, InterestingPages.PageViewMapper.class);
+        MultipleInputs.addInputPath(job1, new Path(args[1]), TextInputFormat.class, InterestingPages.PageInfoMapper.class);
         FileOutputFormat.setOutputPath(job1, new Path(args[2]));
         job1.waitForCompletion(true);
-
-        Configuration conf2 = new Configuration();
-        Job job2 = Job.getInstance(conf2, "interesting pages information");
-        job2.setJarByClass(InterestingPages.class);
-        job2.setMapperClass(InterestingPages.PageInfoMapper.class);
-        job2.setReducerClass(InterestingPages.PageInfoReducer.class);
-        job2.setOutputKeyClass(IntWritable.class);
-        job2.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPaths(job2, new Path(args[2]) +","+ new Path(args[1]));
-        FileOutputFormat.setOutputPath(job2, new Path(args[3]));
-        job2.waitForCompletion(true);
 
         long endTime = System.currentTimeMillis();
         System.out.println("Took "+(endTime - startTime) + " ms");
