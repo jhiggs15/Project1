@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
 
+// could do some reducing in map function
 public class LostInterest {
 
     public static class LostInterestMapper

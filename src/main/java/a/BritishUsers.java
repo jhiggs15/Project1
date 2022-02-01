@@ -48,6 +48,6 @@ public class BritishUsers {
 
         long timeFinish = System.currentTimeMillis();
         double seconds = (timeFinish - timeNow) / 1000.0;
-        System.out.println("With Combiner " + seconds + " seconds");
+        System.out.println(seconds + " seconds");
     }
 }
